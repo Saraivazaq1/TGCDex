@@ -1,49 +1,43 @@
 let json = null;
+let shuffledJson = null
+let cartasEmbaralhadas = false
 
 let i = 0;
 
 async function mostrarCarta() {
-	let response = await fetch("https://api.tcgdex.net/v2/en/cards");
+	if (!cartasEmbaralhadas) {
+		let response = await fetch("https://api.tcgdex.net/v2/en/cards");
 
-	json = await response.json();
-	json = json.filter((val) => {
-		return val.image != undefined && val.hasOwnProperty("image")
-	})
+		json = await response.json();
+		json = json.filter((val) => {
+			return val.image != undefined && val.hasOwnProperty("image")
+		})
+
+		shuffle(json, true)
+		cartasEmbaralhadas = true
+	}
 
 	let pokemonAtual = await (await fetch("https://api.tcgdex.net/v2/en/cards/" + json[i].id)).json()
 	background(220)
+	if (pokemonAtual.category != "Pokemon") {
+		json.splice(i, 1)
+		mostrarCarta()
+	}
 
-	let imagem = loadImage(pokemonAtual.image + '/high.jpg', () => {
-		image(imagem, 0, 0, 250, 350)
+	let imagem = loadImage(pokemonAtual.image + '/low.jpg', () => {
+		image(imagem, 125, 25, 250, 350)
 	})
 
 	stroke(0)
 	strokeWeight(0.5)
 	fill(0)
 	textSize(15)
-	text("Nome: " + pokemonAtual.name, 50, 400)
-	text("Vida: " + pokemonAtual.hp, 50, 450)
+	textAlign(CENTER)
+	text("Nome: " + pokemonAtual.name, width / 2, 400)
+	text("Tipo: " + pokemonAtual.types, width / 2, 425)
+	text("Vida: " + pokemonAtual.hp, width / 2, 450)
 
 }
-
-
-// function elementoAleatorio(array) {
-// 	return array[Math.floor(Math.random()*array.length)]
-// }
-
-
-// function mousePressed() {
-// 	if ((elementoAleatorio(json)).hasOwnProperty("image")) {
-// 		if (json) {
-// 			elemento = elementoAleatorio(json).image
-// 			carregarImagem(elemento)
-// 			console.log(elemento)
-// 		}
-
-// 	} else {
-
-// 	}
-// }
 
 function keyPressed() {
 	if (key === "d" || keyCode === RIGHT_ARROW) {
@@ -58,14 +52,11 @@ function keyPressed() {
 		console.log("Ta errado 👍")
 	}
 	mostrarCarta();
-
-
 }
 
 async function setup() {
 	createCanvas(500, 500);
 	background(220)
-
 	mostrarCarta();
 }
 
